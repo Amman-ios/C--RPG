@@ -1,0 +1,16 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "3bd97929-54d1-49e8-ba5a-839a598e6cac": {
+      "ProjectGuid": "3bd97929-54d1-49e8-ba5a-839a598e6cac",
+      "DisplayName": "Engine",
+      "ColorIndex": 0
+    },
+    "e32ac406-4128-4146-90d2-89cacd977a9c": {
+      "ProjectGuid": "e32ac406-4128-4146-90d2-89cacd977a9c",
+      "DisplayName": "RPG",
+      "ColorIndex": 1
+    }
+  },
+  "NextColorIndex": 2
+}
