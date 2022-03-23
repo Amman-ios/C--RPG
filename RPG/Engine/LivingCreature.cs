@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RPG_Engine
+namespace Engine
 {
-    public class Class1
+    public class LivingCreature
     {
+        public int CurrentHP { get; set; }
+        public int MaxHP { get; set; }
     }
 }
