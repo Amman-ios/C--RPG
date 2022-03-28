@@ -8,8 +8,6 @@ namespace Engine
 {
     internal class LootItem
     {
-        public class LootItem
-        {
             public Item Details { get; set; }
             public int DropPercentage { get; set; }
             public bool IsDefaultItem { get; set; }
@@ -19,6 +17,5 @@ namespace Engine
                 DropPercentage = dropPercentage;
                 IsDefaultItem = isDefaultItem;
             }
-        }
     }
 }
