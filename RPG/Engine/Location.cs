@@ -28,6 +28,8 @@ namespace Engine
             Name = name;
             Description = description;
             ItemReqToEnter = itemReqToEnter;
+            QuestAvailableHere = questAvailableHere;
+            MonsterLivingHere = monsterLivingHere;
         }
     }
 }

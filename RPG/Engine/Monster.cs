@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +13,7 @@ namespace Engine
         public int MaxDMG { get; set; }
         public int RewardXP { get; set; }
         public int RewardGold { get; set; }
+        public List<LootItem> LootTable { get; set; }
 
         public Monster(int id, string name, int maxDMG, int rewardXP, int rewardGold,int currentHP, int maxHP) : base(currentHP, maxHP)
         {
@@ -24,7 +24,7 @@ namespace Engine
             RewardGold = rewardGold;
             CurrentHP = currentHP;
             MaxHP = maxHP;
-
+            LootTable = new List<LootItem>();
         }
     }
 }
