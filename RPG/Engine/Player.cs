@@ -12,8 +12,15 @@ namespace Engine
         public int XP { get; set; }
         public int LVL { get; set; }
         public List<InventoryItem> Inventory { get; set; }
-        public List<PlayerQuest> Questions { get; set; }
-        Inventory = new List<InventoryItem>();
-        Quest = new List<PlayerQuest>();
+        public List<PlayerQuest> Quest { get; set; }
+
+        public Player(int currentHP, int maxHP, int gold, int xp,int lvl) : base(currentHP, maxHP)
+        {
+            Gold = gold;
+            XP = xp;
+            LVL = lvl;
+            Inventory = new List<InventoryItem>();
+            Quest = new List<PlayerQuest>();
+        }
     }
 }
