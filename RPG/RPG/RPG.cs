@@ -27,7 +27,6 @@ namespace RPG
             lblGold.Text = _player.Gold.ToString();
             lblExperience.Text = _player.XP.ToString();
             lblLevel.Text = _player.LVL.ToString();
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -46,6 +45,16 @@ namespace RPG
         }
 
         private void label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
         {
 
         }
