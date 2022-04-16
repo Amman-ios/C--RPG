@@ -46,6 +46,7 @@
     <Compile Include="LootItem.cs" />
     <Compile Include="PlayerQuest.cs" />
     <Compile Include="QuestCompletionItem.cs" />
+    <Compile Include="RNG.cs" />
     <Compile Include="Weapon.cs" />
     <Compile Include="Quest.cs" />
     <Compile Include="Monster.cs" />
