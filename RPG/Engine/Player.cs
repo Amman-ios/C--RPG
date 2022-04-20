@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Engine
 {
@@ -30,19 +31,11 @@ namespace Engine
         {
             if (location.ItemReqToEnter == null)
             {
-                // There is no required item for this location, so return "true"
+                //There is no required item, so return true
                 return true;
             }
-            //check if the player has the required item in their inventory
-            foreach (InventoryItem ii in Inventory)
-            {
-                if (ii.Details.ID == location.ItemReqToEnter.ID)
-                {
-                    return true;
-                }
-            }
-            //No required item in their inventory, so return "false"
-            return false;
+            //check if required item is in player inventory
+            return Inventory.Exists(ii => ii.Details.ID == location.ItemReqToEnter.ID);
         }
 
         public bool HasThisQuest(Quest quest)
@@ -71,24 +64,11 @@ namespace Engine
 
         public bool HasAllQuestCompletionItems(Quest quest)
         {
-            // See if the player has all the items needed to complete the quest here
+            //See if the player has all the items needed to complete the quest here
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                bool foundItemInPlayersInventory = false;
-                // Check each item in the player's inventory the right quantity
-                foreach (InventoryItem ii in Inventory)
-                {
-                    if (ii.Details.ID == qci.Details.ID) // The player has the item(s)
-                    {
-                        foundItemInPlayersInventory = true;
-                        if (ii.Quantity < qci.Quantity) // The player does not have enough of this item to complete the quest
-                        {
-                            return false;
-                        }
-                    }
-                }
-                // The player does not have any of this quest completion item in their inventory
-                if (!foundItemInPlayersInventory)
+                //check each inventory item to see if they have the correct quantity
+                if(!Inventory.Exists(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
                 {
                     return false;
                 }
@@ -101,49 +81,113 @@ namespace Engine
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                foreach (InventoryItem ii in Inventory)
+                InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
+                if(item != null)
                 {
-                    if (ii.Details.ID == qci.Details.ID)
-                    {
-                        // Subtract the quantity from the player's inventory that was needed to complete the quest
-                        ii.Quantity -= qci.Quantity;
-                        break;
-                    }
+                    //subtracts the required quantity of the quest item from the inventory
+                    item.Quantity -= qci.Quantity;
                 }
             }
         }
 
         public void AddItemToInventory(Item itemToAdd)
         {
-            foreach (InventoryItem ii in Inventory)
+            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToAdd.ID);
+            if(item == null)
             {
-                if (ii.Details.ID == itemToAdd.ID)
-                {
-                    // They have the item in their inventory, so increase the quantity by one
-                    ii.Quantity++;
-
-                    return; // We added the item, and are done, so get out of this function
-                }
+                //they don't have the item so add it at a quantity of 1
+                Inventory.Add(new InventoryItem(itemToAdd, 1));
             }
-
-            // They didn't have the item, so add it to their inventory, with a quantity of 1
-            Inventory.Add(new InventoryItem(itemToAdd, 1));
+            else
+            {
+                //they had the item so increase the quantity by 1
+                item.Quantity++;
+            }
         }
 
         public void MarkQuestCompleted(Quest quest)
         {
-            // Find the quest in the player's quest list
-            foreach (PlayerQuest pq in Quest)
+            //find the quest in player quest list
+            PlayerQuest playerQuest = Quest.SingleOrDefault(pq => pq.Details.ID == quest.ID);
+            if(playerQuest != null)
             {
-                if (pq.Details.ID == quest.ID)
-                {
-                    // Mark it as completed
-                    pq.IsComplete = true;
-
-                    return; // We found the quest, and marked it complete, so get out of this function
-                }
+                playerQuest.IsComplete = true;
             }
         }
+        public string ToXmlString()
+        {
+            XmlDocument playerData = new XmlDocument();
 
+            // Create the top-level XML node
+            XmlNode player = playerData.CreateElement("Player");
+            playerData.AppendChild(player);
+
+            // Create the "Stats" child node to hold the other player statistics nodes
+            XmlNode stats = playerData.CreateElement("Stats");
+            player.AppendChild(stats);
+
+            // Create the child nodes for the "Stats" node
+            XmlNode currentHitPoints = playerData.CreateElement("CurrentHitPoints");
+            currentHitPoints.AppendChild(playerData.CreateTextNode(this.CurrentHP.ToString()));
+            stats.AppendChild(currentHitPoints);
+
+            XmlNode maximumHitPoints = playerData.CreateElement("MaximumHitPoints");
+            maximumHitPoints.AppendChild(playerData.CreateTextNode(this.MaxHP.ToString()));
+            stats.AppendChild(maximumHitPoints);
+
+            XmlNode gold = playerData.CreateElement("Gold");
+            gold.AppendChild(playerData.CreateTextNode(this.Gold.ToString()));
+            stats.AppendChild(gold);
+
+            XmlNode experiencePoints = playerData.CreateElement("ExperiencePoints");
+            experiencePoints.AppendChild(playerData.CreateTextNode(this.XP.ToString()));
+            stats.AppendChild(experiencePoints);
+
+            XmlNode currentLocation = playerData.CreateElement("CurrentLocation");
+            currentLocation.AppendChild(playerData.CreateTextNode(this.CurrentLocation.ID.ToString()));
+            stats.AppendChild(currentLocation);
+
+            // Create the "InventoryItems" child node to hold each InventoryItem node
+            XmlNode inventoryItems = playerData.CreateElement("InventoryItems");
+            player.AppendChild(inventoryItems);
+
+            // Create an "InventoryItem" node for each item in the player's inventory
+            foreach (InventoryItem item in this.Inventory)
+            {
+                XmlNode inventoryItem = playerData.CreateElement("InventoryItem");
+
+                XmlAttribute idAttribute = playerData.CreateAttribute("ID");
+                idAttribute.Value = item.Details.ID.ToString();
+                inventoryItem.Attributes.Append(idAttribute);
+
+                XmlAttribute quantityAttribute = playerData.CreateAttribute("Quantity");
+                quantityAttribute.Value = item.Quantity.ToString();
+                inventoryItem.Attributes.Append(quantityAttribute);
+
+                inventoryItems.AppendChild(inventoryItem);
+            }
+
+            // Create the "PlayerQuests" child node to hold each PlayerQuest node
+            XmlNode playerQuests = playerData.CreateElement("PlayerQuests");
+            player.AppendChild(playerQuests);
+
+            // Create a "PlayerQuest" node for each quest the player has acquired
+            foreach (PlayerQuest quest in this.Quest)
+            {
+                XmlNode playerQuest = playerData.CreateElement("PlayerQuest");
+
+                XmlAttribute idAttribute = playerData.CreateAttribute("ID");
+                idAttribute.Value = quest.Details.ID.ToString();
+                playerQuest.Attributes.Append(idAttribute);
+
+                XmlAttribute isCompletedAttribute = playerData.CreateAttribute("IsCompleted");
+                isCompletedAttribute.Value = quest.IsComplete.ToString();
+                playerQuest.Attributes.Append(isCompletedAttribute);
+
+                playerQuests.AppendChild(playerQuest);
+            }
+
+            return playerData.InnerXml; // The XML document, as a string, so we can save the data to disk
+        }
     }
 }
