@@ -7,26 +7,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 using Engine;
 
 namespace RPG
 {
     public partial class RPG : Form
     {
+        private const string PLAYER_DATA_FILE_NAME = "PlayerData.xml";
+
         private Player _player;
+        private Monster _currentMonster;
+
         public RPG()
         {
             InitializeComponent();
 
-            //Base Player Information
-            _player = new Player(10,10,20,0);
-            MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
-            _player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUST_SWORD), 1));
+            if (File.Exists(PLAYER_DATA_FILE_NAME))
+            {
+                _player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+            }
+            else
+            {
+                _player = Player.CreateDefaultPlayer();
+            }
 
-            lblHitPoints.Text = _player.CurrentHP.ToString();
-            lblGold.Text = _player.Gold.ToString();
-            lblExperience.Text = _player.XP.ToString();
-            lblLevel.Text = _player.LVL.ToString();
+            MoveTo(_player.CurrentLocation);
+
+            UpdatePlayerStats();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -349,21 +357,21 @@ namespace RPG
             int damageToMonster = RNG.NumberBetween(currentWeapon.MinDMG, currentWeapon.MaxDMG);
 
             // Apply the damage to the monster's CurrentHitPoints
-            _currentMonster.CurrentHitPoints -= damageToMonster;
+            _currentMonster.CurrentHP -= damageToMonster;
 
             // Display message
             rtbMessages.Text += "You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points." + Environment.NewLine;
 
             // Check if the monster is dead
-            if (_currentMonster.CurrentHitPoints <= 0)
+            if (_currentMonster.CurrentHP <= 0)
             {
                 // Monster is dead
                 rtbMessages.Text += Environment.NewLine;
                 rtbMessages.Text += "You defeated the " + _currentMonster.Name + Environment.NewLine;
 
                 // Give player experience points for killing the monster
-                _player.XP += _currentMonster.RewardExperiencePoints;
-                rtbMessages.Text += "You receive " + _currentMonster.RewardExperiencePoints.ToString() + " experience points" + Environment.NewLine;
+                _player.XP += _currentMonster.RewardXP;
+                rtbMessages.Text += "You receive " + _currentMonster.RewardXP.ToString() + " experience points" + Environment.NewLine;
 
                 // Give player gold for killing the monster 
                 _player.Gold += _currentMonster.RewardGold;
@@ -429,7 +437,7 @@ namespace RPG
                 // Monster is still alive
 
                 // Determine the amount of damage the monster does to the player
-                int damageToPlayer = RNG.NumberBetween(0, _currentMonster.MaximumDamage);
+                int damageToPlayer = RNG.NumberBetween(0, _currentMonster.MaxDMG);
 
                 // Display message
                 rtbMessages.Text += "The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage." + Environment.NewLine;
@@ -482,7 +490,7 @@ namespace RPG
             // Monster gets their turn to attack
 
             // Determine the amount of damage the monster does to the player
-            int damageToPlayer = RNG.NumberBetween(0, _currentMonster.MaximumDamage);
+            int damageToPlayer = RNG.NumberBetween(0, _currentMonster.MaxDMG);
 
             // Display message
             rtbMessages.Text += "The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage." + Environment.NewLine;
@@ -516,5 +524,9 @@ namespace RPG
             rtbMessages.ScrollToCaret();
         }
 
+        private void RPG_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
+        }
     }
 }
