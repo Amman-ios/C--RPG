@@ -11,7 +11,7 @@ namespace Engine
         public int MinDMG { get; set; }
         public int MaxDMG { get; set; }
 
-        public Weapon(int id, string name, string namePlural, int minDMG,int maxDMG) : base(id, name, namePlural)
+        public Weapon(int id, string name, string namePlural, int minDMG,int maxDMG, int price) : base(id, name, namePlural, price)
         {
             MinDMG = minDMG;
             MaxDMG = maxDMG;
